@@ -50,7 +50,8 @@ def test_engine(__C, dataset, state_dict=None, validation=False):
         __C,
         pretrained_emb,
         token_size,
-        ans_size
+        ans_size,
+        dataset.token_to_ix
     )
     net.cuda()
     net.eval()

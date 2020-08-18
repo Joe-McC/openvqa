@@ -24,7 +24,8 @@ def train_engine(__C, dataset, dataset_eval=None):
         __C,
         pretrained_emb,
         token_size,
-        ans_size
+        ans_size,
+        dataset.token_to_ix
     )
     net.cuda()
     net.train()

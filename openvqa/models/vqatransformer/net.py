@@ -1,16 +1,18 @@
 import torch
 import torch.nn as nn
-from transformers.modeling_bert import BertEmbeddings
 
 from openvqa.models.vqatransformer.adapter import Adapter
 from openvqa.models.vqatransformer.transformer import Transformer, TransformerPooler
+from openvqa.ops.layer_norm import LayerNorm
 from openvqa.utils.make_mask import make_mask
 
 
 class Net(nn.Module):
-    def __init__(self, __C, pretrained_emb, token_size, answer_size):
+    def __init__(self, __C, pretrained_emb, token_size, answer_size, token_to_ix):
         super(Net, self).__init__()
         self.__C = __C
+
+        self.token_to_ix = token_to_ix
 
         self.word_embedding = nn.Embedding(
             num_embeddings=token_size,
@@ -19,8 +21,6 @@ class Net(nn.Module):
 
         # Loading the GloVe embedding weights
         self.word_embedding.weight.data.copy_(torch.from_numpy(pretrained_emb))
-
-        self.bert_embedding = BertEmbeddings()
 
         # Segment embedding
         self.segment_embedding = nn.Embedding(2, __C.HIDDEN_SIZE)
@@ -35,10 +35,13 @@ class Net(nn.Module):
 
         self.lstm_proj = nn.Linear(__C.HIDDEN_SIZE * 2, __C.HIDDEN_SIZE)
         self.cls_project = nn.Linear(__C.WORD_EMBED_SIZE, __C.HIDDEN_SIZE)
+
         self.img_encoder = Adapter(__C)
+        self.img_pos_emb = nn.Linear(2, __C.HIDDEN_SIZE)
+
         self.transformer = Transformer(__C)
 
-        self.layer_norm = nn.LayerNorm(__C.HIDDEN_SIZE)
+        self.layer_norm = LayerNorm(__C.HIDDEN_SIZE)
         self.embbeding_dropout = nn.Dropout(__C.DROPOUT_R)
 
         # Classification layers
@@ -70,11 +73,19 @@ class Net(nn.Module):
         img_seg_ids = torch.ones(img_feat.size()[:-1], dtype=torch.long, device=device)
         img_seg_embedding = self.segment_embedding(img_seg_ids)
 
+        # image position embeddign
+        width = 14
+        height = 14
+        x = torch.arange(width, dtype=torch.float, device=device)
+        y = torch.arange(height, dtype=torch.float, device=device)
+        img_pos = torch.stack(torch.meshgrid([x, y]), dim=-1).view(width * height, 2).unsqueeze(0).expand(batch_size, width * height, 2)
+        img_pos_emb = self.img_pos_emb(img_pos)
+
         # image embedding
-        img_feat = img_feat + img_seg_embedding
+        img_feat = img_feat + img_seg_embedding + img_pos_emb
 
         # CLS embedding
-        cls_token = torch.tensor(2, device=device).repeat(batch_size, 1)
+        cls_token = torch.tensor(self.token_to_ix['CLS'], device=device).repeat(batch_size, 1)
         cls_token = self.word_embedding(cls_token)
         cls_token = self.cls_project(cls_token)
 
