@@ -158,7 +158,7 @@ if __name__ == '__main__':
     print('Hyper Parameters:')
     print(__C)
 
-    execution = Execution(__C)
+    execution = Execution(__C, args_dict)
     execution.run(__C.RUN_MODE)
 
 

@@ -214,6 +214,7 @@ def train_engine(__C, dataset, dataset_eval=None):
                     loss_tmp / __C.SUB_BATCH_SIZE,
                     optim._rate
                 ), end='          ')
+                wandb.log({"Epoch": epoch + 1, "Loss": loss_tmp / __C.SUB_BATCH_SIZE, "Lr": optim._rate})
 
             # Gradient norm clipping
             if __C.GRAD_NORM_CLIP > 0:
@@ -276,9 +277,6 @@ def train_engine(__C, dataset, dataset_eval=None):
             ', Speed(s/batch): ' + str(elapse_time / step) +
             '\n\n'
         )
-        wandb.log({"Epoch": str(epoch_finish), "Loss": str(loss_sum / data_size),
-                   "Lr": str(optim._rate), "Elapsed time": str(int(elapse_time)),
-                   "Speed(s/batch)": str(elapse_time / step)})
 
         logfile.close()
 

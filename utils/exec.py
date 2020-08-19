@@ -11,11 +11,10 @@ import wandb
 
 
 class Execution:
-    def __init__(self, __C):
+    def __init__(self, __C, param_dict):
         self.__C = __C
 
-        wandb.init(project="openvqa")
-        wandb.config = __C
+        wandb.init(project="openvqa-v2", config=param_dict)
 
         print('Loading dataset........')
         self.dataset = DatasetLoader(__C).DataSet()

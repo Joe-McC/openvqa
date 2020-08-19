@@ -116,9 +116,9 @@ parser.add_argument('--image_width', '-image_width', default=224, type=int)
 
 
 if __name__ == '__main__':
-    train_images_path = './raws/images/train/'
-    val_images_path = './raws/images/val/'
-    test_images_path = './raws/images/test/'
+    train_images_path = './raw/images/train/'
+    val_images_path = './raw/images/val/'
+    test_images_path = './raw/images/test/'
     train_feats_npz_path = './feats/train/'
     val_feats_npz_path = './feats/val/'
     test_feats_npz_path = './feats/test/'
