@@ -61,7 +61,7 @@ class AttFlat(nn.Module):
 # -------------------------
 
 class Net(nn.Module):
-    def __init__(self, __C, pretrained_emb, token_size, answer_size):
+    def __init__(self, __C, pretrained_emb, token_size, answer_size, token_to_ix):
         super(Net, self).__init__()
         self.__C = __C
 
