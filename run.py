@@ -30,7 +30,8 @@ def parse_args():
                            'mem',
                            'butd',
                            'mmnasnet',
-                           'vqatransformer'
+                           'vqatransformer',
+                           'vqabert'
                            ]
                         ,
                       help='{'
@@ -43,6 +44,7 @@ def parse_args():
                            'butd,'
                            'mmnasnet,'
                            'vqatransformer,'
+                           'vqabert,'
                            '}'
                         ,
                       type=str, required=True)

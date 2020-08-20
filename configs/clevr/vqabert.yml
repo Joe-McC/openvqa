@@ -1,6 +1,6 @@
 # Network
-MODEL_USE: vqatransformer
-LAYER: 9
+MODEL_USE: vqabert
+LAYER: 6
 HIDDEN_SIZE: 512
 FF_SIZE: 2048
 MULTI_HEAD: 8

@@ -3,15 +3,15 @@
 # Written by Yuhao Cui https://github.com/cuiyuhao1996
 # --------------------------------------------------------
 
-from openvqa.utils.make_mask import make_mask
-from openvqa.ops.fc import FC, MLP
-from openvqa.ops.layer_norm import LayerNorm
-from openvqa.models.mcan.mca import MCA_ED
-from openvqa.models.mcan.adapter import Adapter
-
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
+
+from openvqa.models.mcan.adapter import Adapter
+from openvqa.models.mcan.mca import MCA_ED
+from openvqa.ops.fc import MLP
+from openvqa.ops.layer_norm import LayerNorm
+from openvqa.utils.make_mask import make_mask
 
 
 # ------------------------------
@@ -64,7 +64,7 @@ class Net(nn.Module):
     def __init__(self, __C, pretrained_emb, token_size, answer_size, token_to_ix):
         super(Net, self).__init__()
         self.__C = __C
-
+        self.token_to_ix = token_to_ix
         self.embedding = nn.Embedding(
             num_embeddings=token_size,
             embedding_dim=__C.WORD_EMBED_SIZE
@@ -93,9 +93,7 @@ class Net(nn.Module):
         self.proj_norm = LayerNorm(__C.FLAT_OUT_SIZE)
         self.proj = nn.Linear(__C.FLAT_OUT_SIZE, answer_size)
 
-
     def forward(self, frcn_feat, grid_feat, bbox_feat, ques_ix):
-
         # Pre-process Language Feature
         lang_feat_mask = make_mask(ques_ix.unsqueeze(2))
         lang_feat = self.embedding(ques_ix)
@@ -128,4 +126,3 @@ class Net(nn.Module):
         proj_feat = self.proj(proj_feat)
 
         return proj_feat
-
