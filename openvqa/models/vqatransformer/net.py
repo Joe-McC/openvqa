@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from transformers import BertModel
 
 from openvqa.models.vqatransformer.adapter import Adapter
 from openvqa.models.vqatransformer.transformer import Transformer, TransformerPooler
@@ -25,10 +24,7 @@ class Net(nn.Module):
         self.word_embedding.weight.data.copy_(torch.from_numpy(pretrained_emb))
 
         # Segment embedding
-        bert = BertModel.from_pretrained('bert-base-uncased')
-        self.segment_embedding = bert.embeddings.token_type_embeddings
-        self.segment_proj = nn.Linear(768, __C.HIDDEN_SIZE)
-        # self.segment_embedding = nn.Embedding(2, __C.HIDDEN_SIZE)
+        self.segment_embedding = nn.Embedding(2, __C.HIDDEN_SIZE)
 
         self.lstm = nn.LSTM(
             input_size=__C.WORD_EMBED_SIZE,
@@ -46,11 +42,14 @@ class Net(nn.Module):
 
         self.transformer = Transformer(__C)
 
-        self.layer_norm = LayerNorm(__C.HIDDEN_SIZE)
+        self.layer_norm1 = LayerNorm(__C.HIDDEN_SIZE)
         self.embbeding_dropout = nn.Dropout(__C.DROPOUT_R)
 
         # Classification layers
         self.pooler = TransformerPooler(__C)
+        self.dense = nn.Linear(__C.HIDDEN_SIZE, __C.HIDDEN_SIZE)
+        self.activation = nn.Tanh()
+        self.layer_norm2 = LayerNorm(__C.HIDDEN_SIZE)
         self.cls_dropout = nn.Dropout(__C.DROPOUT_R)
         self.classifier = nn.Linear(__C.HIDDEN_SIZE, answer_size)
 
@@ -72,10 +71,9 @@ class Net(nn.Module):
         # create text segment embedding
         text_seg_ids = torch.zeros(text_feat.size()[:-1], dtype=torch.long, device=device)
         text_seg_embedding = self.segment_embedding(text_seg_ids)
-        text_seg_embedding = self.segment_proj(text_seg_embedding)
 
         # text embedding
-        text_feat = text_feat + text_seg_embedding #+ text_position_embeddings
+        text_feat = text_feat + text_seg_embedding  # + text_position_embeddings
 
         # image features and mask
         img_feat, img_feat_mask = self.img_encoder(frcn_feat, grid_feat, bbox_feat)
@@ -83,7 +81,6 @@ class Net(nn.Module):
         # create image segment embedding
         img_seg_ids = torch.ones(img_feat.size()[:-1], dtype=torch.long, device=device)
         img_seg_embedding = self.segment_embedding(img_seg_ids)
-        img_seg_embedding = self.segment_proj(img_seg_embedding)
 
         # image position embeddign
         width = 14
@@ -104,20 +101,22 @@ class Net(nn.Module):
         cls_token = self.cls_project(cls_token)
 
         # prepare input embedding for transformer
-        embeddings = torch.cat([cls_token, img_feat, text_feat], dim=1)
-        embeddings = self.layer_norm(embeddings)
+        embeddings = torch.cat([cls_token, text_feat, img_feat], dim=1)
+        embeddings = self.layer_norm1(embeddings)
         embeddings = self.embbeding_dropout(embeddings)
 
         # prepare mask for self attention
         cls_mask = make_mask(cls_token)
-        attention_mask = torch.cat([cls_mask, img_feat_mask, text_feat_mask], dim=-1)
+        attention_mask = torch.cat([cls_mask, text_feat_mask, img_feat_mask], dim=-1)
 
         # Backbone Framework
         feat = self.transformer(embeddings, attention_mask)
 
         # Classification layers
-        cls_output = self.pooler(feat)
-        cls_output = self.cls_dropout(cls_output)
-        output = self.classifier(cls_output)
-
+        pooled_output = self.pooler(feat)
+        pooled_output = self.cls_dropout(pooled_output)
+        pooled_output = self.dense(pooled_output)
+        pooled_output = self.activation(pooled_output)
+        pooled_output = self.layer_norm2(pooled_output)
+        output = self.classifier(pooled_output)
         return output
