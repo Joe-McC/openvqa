@@ -14,7 +14,7 @@ class Execution:
     def __init__(self, __C, param_dict):
         self.__C = __C
 
-        wandb.init(project="openvqa-v2", config=param_dict)
+        wandb.init(project="openvqa-gqa", config=param_dict)
 
         print('Loading dataset........')
         self.dataset = DatasetLoader(__C).DataSet()

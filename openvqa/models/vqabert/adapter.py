@@ -29,7 +29,7 @@ class Adapter(BaseAdapter):
     def gqa_init(self, __C):
         imgfeat_linear_size = __C.FEAT_SIZE['gqa']['FRCN_FEAT_SIZE'][1]
         if __C.USE_BBOX_FEAT:
-            self.bbox_linear = nn.Linear(5, __C.BBOXFEAT_EMB_SIZE)
+            self.bbox_linear = nn.Linear(6, __C.BBOXFEAT_EMB_SIZE)
             imgfeat_linear_size += __C.BBOXFEAT_EMB_SIZE
         self.frcn_linear = nn.Linear(imgfeat_linear_size, __C.HIDDEN_SIZE)
 

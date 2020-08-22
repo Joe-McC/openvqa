@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from openvqa.models.mcan.adapter import Adapter
+from openvqa.models.vqabert.adapter import Adapter
 from openvqa.models.vqabert.vqa_bert import VQA_BERT, BERTPooler
 from openvqa.ops.layer_norm import LayerNorm
 from openvqa.utils.make_mask import make_mask
