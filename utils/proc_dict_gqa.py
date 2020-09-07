@@ -40,6 +40,7 @@ def tokenize(stat_ques_dict):
         'PAD': 0,
         'UNK': 1,
         'CLS': 2,
+        'IMG': 3,
     }
 
     max_token = 0
@@ -82,4 +83,4 @@ ans_to_ix, ix_to_ans = ans_stat(stat_ans_dict)
 # print(token_to_ix)
 # print(token_to_ix.__len__())
 # print(max_token)
-json.dump([ans_to_ix, ix_to_ans, token_to_ix, max_token], open('../openvqa/datasets/gqa/dicts.json', 'w'))
+json.dump([ans_to_ix, ix_to_ans, token_to_ix, max_token], open('./openvqa/datasets/gqa/dicts.json', 'w'))

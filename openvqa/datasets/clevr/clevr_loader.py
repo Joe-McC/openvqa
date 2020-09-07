@@ -91,6 +91,7 @@ class DataSet(BaseDataSet):
             'PAD': 0,
             'UNK': 1,
             'CLS': 2,
+            'IMG': 3,
         }
 
         spacy_tool = None
@@ -100,6 +101,7 @@ class DataSet(BaseDataSet):
             pretrained_emb.append(spacy_tool('PAD').vector)
             pretrained_emb.append(spacy_tool('UNK').vector)
             pretrained_emb.append(spacy_tool('CLS').vector)
+            pretrained_emb.append(spacy_tool('IMG').vector)
 
         max_token = 0
         for ques in stat_ques_list:

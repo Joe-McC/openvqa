@@ -11,10 +11,10 @@ import torch.utils.data as Data
 from openvqa.models.model_loader import ModelLoader
 from openvqa.utils.optim import get_optim, adjust_lr
 from utils.test_engine import test_engine, ckpt_proc
+import wandb
 
 
 def train_engine(__C, dataset, dataset_eval=None):
-
     data_size = dataset.data_size
     token_size = dataset.token_size
     ans_size = dataset.ans_size
@@ -24,16 +24,19 @@ def train_engine(__C, dataset, dataset_eval=None):
         __C,
         pretrained_emb,
         token_size,
-        ans_size
+        ans_size,
+        dataset.token_to_ix
     )
     net.cuda()
     net.train()
+    wandb.watch(net)
 
     if __C.N_GPU > 1:
         net = nn.DataParallel(net, device_ids=__C.DEVICES)
 
     # Define Loss Function
-    loss_fn = eval('torch.nn.' + __C.LOSS_FUNC_NAME_DICT[__C.LOSS_FUNC] + "(reduction='" + __C.LOSS_REDUCTION + "').cuda()")
+    loss_fn = eval(
+        'torch.nn.' + __C.LOSS_FUNC_NAME_DICT[__C.LOSS_FUNC] + "(reduction='" + __C.LOSS_REDUCTION + "').cuda()")
 
     # Load checkpoint if resume training
     if __C.RESUME:
@@ -64,13 +67,13 @@ def train_engine(__C, dataset, dataset_eval=None):
         optim = get_optim(__C, net, data_size, ckpt['lr_base'])
         optim._step = int(data_size / __C.BATCH_SIZE * start_epoch)
         optim.optimizer.load_state_dict(ckpt['optimizer'])
-        
+
         if ('ckpt_' + __C.VERSION) not in os.listdir(__C.CKPTS_PATH):
             os.mkdir(__C.CKPTS_PATH + '/ckpt_' + __C.VERSION)
 
     else:
         if ('ckpt_' + __C.VERSION) not in os.listdir(__C.CKPTS_PATH):
-            #shutil.rmtree(__C.CKPTS_PATH + '/ckpt_' + __C.VERSION)
+            # shutil.rmtree(__C.CKPTS_PATH + '/ckpt_' + __C.VERSION)
             os.mkdir(__C.CKPTS_PATH + '/ckpt_' + __C.VERSION)
 
         optim = get_optim(__C, net, data_size)
@@ -156,13 +159,13 @@ def train_engine(__C, dataset, dataset_eval=None):
 
                 sub_frcn_feat_iter = \
                     frcn_feat_iter[accu_step * __C.SUB_BATCH_SIZE:
-                                  (accu_step + 1) * __C.SUB_BATCH_SIZE]
+                                   (accu_step + 1) * __C.SUB_BATCH_SIZE]
                 sub_grid_feat_iter = \
                     grid_feat_iter[accu_step * __C.SUB_BATCH_SIZE:
-                                  (accu_step + 1) * __C.SUB_BATCH_SIZE]
+                                   (accu_step + 1) * __C.SUB_BATCH_SIZE]
                 sub_bbox_feat_iter = \
                     bbox_feat_iter[accu_step * __C.SUB_BATCH_SIZE:
-                                  (accu_step + 1) * __C.SUB_BATCH_SIZE]
+                                   (accu_step + 1) * __C.SUB_BATCH_SIZE]
                 sub_ques_ix_iter = \
                     ques_ix_iter[accu_step * __C.SUB_BATCH_SIZE:
                                  (accu_step + 1) * __C.SUB_BATCH_SIZE]
@@ -211,6 +214,7 @@ def train_engine(__C, dataset, dataset_eval=None):
                     loss_tmp / __C.SUB_BATCH_SIZE,
                     optim._rate
                 ), end='          ')
+                wandb.log({"Epoch": epoch + 1, "Loss": loss_tmp / __C.SUB_BATCH_SIZE, "Lr": optim._rate})
 
             # Gradient norm clipping
             if __C.GRAD_NORM_CLIP > 0:
@@ -232,7 +236,7 @@ def train_engine(__C, dataset, dataset_eval=None):
             optim.step()
 
         time_end = time.time()
-        elapse_time = time_end-time_start
+        elapse_time = time_end - time_start
         print('Finished in {}s'.format(int(elapse_time)))
         epoch_finish = epoch + 1
 
@@ -269,10 +273,11 @@ def train_engine(__C, dataset, dataset_eval=None):
             'Epoch: ' + str(epoch_finish) +
             ', Loss: ' + str(loss_sum / data_size) +
             ', Lr: ' + str(optim._rate) + '\n' +
-            'Elapsed time: ' + str(int(elapse_time)) + 
+            'Elapsed time: ' + str(int(elapse_time)) +
             ', Speed(s/batch): ' + str(elapse_time / step) +
             '\n\n'
         )
+
         logfile.close()
 
         # Eval after every epoch

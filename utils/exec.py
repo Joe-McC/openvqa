@@ -7,10 +7,14 @@ import os, copy
 from openvqa.datasets.dataset_loader import DatasetLoader
 from utils.train_engine import train_engine
 from utils.test_engine import test_engine
+import wandb
+
 
 class Execution:
-    def __init__(self, __C):
+    def __init__(self, __C, param_dict):
         self.__C = __C
+
+        wandb.init(project="openvqa-gqa", config=param_dict)
 
         print('Loading dataset........')
         self.dataset = DatasetLoader(__C).DataSet()
@@ -24,7 +28,6 @@ class Execution:
 
             print('Loading validation set for per-epoch evaluation........')
             self.dataset_eval = DatasetLoader(__C_eval).DataSet()
-
 
     def run(self, run_mode):
         if run_mode == 'train':
@@ -40,7 +43,6 @@ class Execution:
 
         else:
             exit(-1)
-
 
     def empty_log(self, version):
         print('Initializing log file........')

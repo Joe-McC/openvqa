@@ -29,7 +29,9 @@ def parse_args():
                            'mfh',
                            'mem',
                            'butd',
-                           'mmnasnet'
+                           'mmnasnet',
+                           'vqatransformer',
+                           'vqabert'
                            ]
                         ,
                       help='{'
@@ -41,6 +43,8 @@ def parse_args():
                            'mfh,'
                            'butd,'
                            'mmnasnet,'
+                           'vqatransformer,'
+                           'vqabert,'
                            '}'
                         ,
                       type=str, required=True)
@@ -156,7 +160,7 @@ if __name__ == '__main__':
     print('Hyper Parameters:')
     print(__C)
 
-    execution = Execution(__C)
+    execution = Execution(__C, args_dict)
     execution.run(__C.RUN_MODE)
 
 
