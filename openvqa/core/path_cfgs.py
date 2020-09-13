@@ -81,11 +81,13 @@ class PATH:
                 'train': '',
                 'val': 'testdev',
                 'test': 'test',
+                'visualise': 'testdev'
             },
             'clevr': {
                 'train': '',
                 'val': 'val',
                 'test': 'test',
+                'visualise': 'test'
             },
 
         }

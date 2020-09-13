@@ -77,12 +77,15 @@ class Net(nn.Module):
         img_feat_mask = torch.cat([img_mask, img_feat_mask], dim=-1)
 
         # Backbone Framework
-        lang_feat, img_feat = self.backbone(
+        lang_feat, img_feat, text_attention_map, img_attention_map = self.backbone(
             text_feat,
             img_feat,
             text_feat_mask,
             img_feat_mask
         )
+
+        img_attention_map = img_attention_map[:, :, :, 0, :]
+        txt_attention_map = text_attention_map[:, :, :, 0, :]
 
         text_pool = self.text_pooler(lang_feat)
         img_pool = self.img_pooler(img_feat)
@@ -94,4 +97,4 @@ class Net(nn.Module):
         pooled_output = self.layer_norm(pooled_output)
         output = self.cls(pooled_output)
 
-        return output
+        return output, img_attention_map, txt_attention_map

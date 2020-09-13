@@ -52,7 +52,7 @@ class MHAtt(nn.Module):
             int(self.__C.HIDDEN_SIZE / self.__C.MULTI_HEAD)
         ).transpose(1, 2)
 
-        atted = self.att(v, k, q, mask)
+        atted, attention_map = self.att(v, k, q, mask)
         atted = atted.transpose(1, 2).contiguous().view(
             n_batches,
             -1,
@@ -61,7 +61,7 @@ class MHAtt(nn.Module):
 
         atted = self.linear_merge(atted)
 
-        return atted
+        return atted, attention_map
 
     def att(self, value, key, query, mask):
         d_k = query.size(-1)
@@ -76,7 +76,7 @@ class MHAtt(nn.Module):
         att_map = F.softmax(scores, dim=-1)
         att_map = self.dropout(att_map)
 
-        return torch.matmul(att_map, value)
+        return torch.matmul(att_map, value), att_map
 
 
 # ---------------------------
@@ -150,19 +150,17 @@ class SGA(nn.Module):
         self.norm3 = LayerNorm(__C.HIDDEN_SIZE)
 
     def forward(self, x, y, x_mask, y_mask):
-        x = self.norm1(x + self.dropout1(
-            self.mhatt1(v=x, k=x, q=x, mask=x_mask)
-        ))
+        x_self, self_attention_map = self.mhatt1(v=x, k=x, q=x, mask=x_mask)
+        x = self.norm1(x + self.dropout1(x_self))
 
-        x = self.norm2(x + self.dropout2(
-            self.mhatt2(v=y, k=y, q=x, mask=y_mask)
-        ))
+        x_guide, guide_attention_map = self.mhatt2(v=y, k=y, q=x, mask=y_mask)
+        x = self.norm2(x + self.dropout2(x_guide))
 
         x = self.norm3(x + self.dropout3(
             self.ffn(x)
         ))
 
-        return x
+        return x, self_attention_map
 
 
 class BERTPooler(nn.Module):
@@ -187,10 +185,15 @@ class VQA_BERT(nn.Module):
         self.visual_encoders = nn.ModuleList([SGA(__C) for _ in range(__C.LAYER)])
         self.text_encoders = nn.ModuleList([SGA(__C) for _ in range(__C.LAYER)])
 
+    # y = text, x = image
     def forward(self, y, x, y_mask, x_mask):
+        img_attention_map = []
+        text_attention_map = []
         for text_enc, visual_enc in zip(self.text_encoders, self.visual_encoders):
-            y_new = text_enc(y, x, y_mask, x_mask)
-            x_new = visual_enc(x, y, x_mask, y_mask)
+            y_new, text_att_map = text_enc(y, x, y_mask, x_mask)
+            x_new, img_att_map = visual_enc(x, y, x_mask, y_mask)
             y = y_new
             x = x_new
-        return y, x
+            text_attention_map.append(text_att_map)
+            img_attention_map.append(img_att_map)
+        return y, x, torch.stack(text_attention_map, dim=1), torch.stack(img_attention_map, dim=1)

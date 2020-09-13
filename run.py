@@ -136,6 +136,11 @@ def parse_args():
                       help='True: verbose print, False: simple print',
                       type=str)
 
+    parser.add_argument('--WANDB', dest='WANDB',
+                        choices=['True', 'False'],
+                        help='True: Turn on WANDB logging,'
+                             'False: Turn off WANDB logging',
+                        type=str)
 
     args = parser.parse_args()
     return args

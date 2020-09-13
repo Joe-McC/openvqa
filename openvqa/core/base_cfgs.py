@@ -210,7 +210,7 @@ class BaseCfgs(PATH):
 
 
     def proc(self):
-        assert self.RUN_MODE in ['train', 'val', 'test']
+        assert self.RUN_MODE in ['train', 'val', 'test', 'visualise']
 
         # ------------ Devices setup
         os.environ['CUDA_VISIBLE_DEVICES'] = self.GPU

@@ -9,12 +9,15 @@ from utils.train_engine import train_engine
 from utils.test_engine import test_engine
 import wandb
 
+from utils.visualise_engine import visualise_engine
+
 
 class Execution:
     def __init__(self, __C, param_dict):
         self.__C = __C
 
-        wandb.init(project="openvqa-gqa", config=param_dict)
+        # if self.__C.WANDB:
+        # wandb.init(project="openvqa-gqa", config=param_dict)
 
         print('Loading dataset........')
         self.dataset = DatasetLoader(__C).DataSet()
@@ -40,6 +43,9 @@ class Execution:
 
         elif run_mode == 'test':
             test_engine(self.__C, self.dataset)
+
+        elif run_mode == 'visualise':
+            visualise_engine(self.__C, self.dataset)
 
         else:
             exit(-1)
