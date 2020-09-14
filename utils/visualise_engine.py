@@ -75,7 +75,7 @@ def visualise_engine(__C):
             grid_feat_iter,
             bbox_feat_iter,
             ques_ix_iter,
-            ans_iter, image_id, question, words
+            ans_iter, image_id, question, words, target_ans
     ) in enumerate(dataloader):
         print("\rEvaluation: [step %4d/%4d]" % (
             step,
@@ -98,32 +98,35 @@ def visualise_engine(__C):
         pred_np = pred.cpu().data.numpy()
         pred_argmax = np.argmax(pred_np, axis=1)
         ans = dataset.ix_to_ans[pred_argmax[0]]
+
         visualise_img(question['image_filename'][0], question['question'][0], img_attention_map.cpu().data.numpy()[0],
-                      ans)
+                      ans, target_ans[0])
         visualise_txt(words, txt_attention_map.cpu().data.numpy()[0])
 
 
-def visualise_img(image_id, question, attention_map, ans):
-    img_path = os.path.join('/home/mark/openvqa/data/clevr/raw/images/test', image_id)
+
+def visualise_img(image_id, question, attention_map, ans, target_ans):
+    img_path = os.path.join('/home/mark/openvqa/data/clevr/raw/images/val', image_id)
     original_img = imread(img_path, mode='RGB')
     img = imresize(original_img, (224, 224), interp='bicubic')
     fig = plt.figure()
     ax1 = fig.add_axes((0.1, 0.2, 0.8, 0.7))
     ax1.imshow(original_img)
     ax1.axis('off')
-    fig.text(0.5, 0.1, f'{question} {ans} ', wrap=True, horizontalalignment='center', fontsize=12)
+    fig.text(0.5, 0.1, f'{question} \nAnswer: {target_ans} Prediction: {ans}', wrap=True, horizontalalignment='center',
+             fontsize=12, fontname='Droid Sans')
     plt.show()
 
-    plt.figure(figsize=(20, 60))
+    plt.figure(figsize=(40, 30))
     count = 1
     for i in range(6):
         for j in range(8):
-            plt.subplot(12, 4, count)
+            plt.subplot(6, 8, count)
             attention = skimage.transform.pyramid_expand(attention_map[i][j].reshape(14, 14), upscale=16, sigma=10)
             plt.imshow(img)
             plt.imshow(attention, alpha=0.6)
-            plt.text(0, 1, f'[IMG]-Layer{i}-Head{j}', backgroundcolor='white', fontsize=13)
-            plt.text(0, 1, f'[IMG]-Layer{i}-Head{j}', color='black', fontsize=13)
+            plt.text(0, 1, f'[IMG]-Layer{i}-Head{j}', backgroundcolor='white', fontsize=26)
+            plt.text(0, 1, f'[IMG]-Layer{i}-Head{j}', color='black', fontsize=26)
             plt.set_cmap(cm.Greys_r)
             plt.axis('off')
             count += 1
@@ -137,15 +140,14 @@ def visualise_txt(question, attention_map):
 
     for i in range(3):
         for j in range(2):
-            im = axs[i][j].imshow(attention_map[layer])
+            axs[i][j].imshow(attention_map[layer])
             axs[i][j].set_title(f'[TXT] Layer {layer}', fontsize=18)
             axs[i][j].set_xticks(np.arange(len(list(chain(*question)))))
             head_labels = [f"Head{x}" for x in range(8)]
             axs[i][j].set_yticks(np.arange(len(head_labels)))
             axs[i][j].set_xticklabels(list(chain(*question)))
             axs[i][j].set_yticklabels(head_labels, fontsize=16)
-            axs[i][j].xaxis.tick_top()
-            axs[i][j].tick_params(axis='x', which='major', pad=30)
+            axs[i][j].tick_params(axis='x', which='major')
             plt.setp(axs[i][j].get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor", fontsize=16)
             layer += 1
 

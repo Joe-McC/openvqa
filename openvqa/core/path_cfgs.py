@@ -87,7 +87,7 @@ class PATH:
                 'train': '',
                 'val': 'val',
                 'test': 'test',
-                'visualise': 'test'
+                'visualise': 'val'
             },
 
         }

@@ -153,12 +153,12 @@ class DataSet(BaseDataSet):
         ques_ix_iter, words = self.proc_ques(ques, self.token_to_ix, max_token=self.max_token)
         ans_iter = np.zeros(1)
 
-        if self.__C.RUN_MODE in ['train']:
+        if self.__C.RUN_MODE in ['train', 'visualise']:
             # process answers
             ans = ques['answer']
             ans_iter = self.proc_ans(ans, self.ans_to_ix)
 
-        return ques_ix_iter, ans_iter, iid, ques, words
+        return ques_ix_iter, ans_iter, iid, ques, words, ans
 
 
     def load_img_feats(self, idx, iid):
