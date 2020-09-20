@@ -98,7 +98,7 @@ def visualise_engine(__C):
         pred_np = pred.cpu().data.numpy()
         pred_argmax = np.argmax(pred_np, axis=1)
         ans = dataset.ix_to_ans[pred_argmax[0]]
-
+        plt.interactive(False)
         visualise_img(question['image_filename'][0], question['question'][0], img_attention_map.cpu().data.numpy()[0],
                       ans, target_ans[0])
         visualise_txt(words, txt_attention_map.cpu().data.numpy()[0])
