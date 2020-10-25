@@ -9,16 +9,16 @@ The main folder for the model is located [here](https://github.com/markvasin/ope
 ![VQA model](Images/model-framework.png)
 
 ## Visualisation
-The code to generate visualisation of attention distribution is [here]().
+The code to generate visualisation of attention distribution is [here](https://github.com/markvasin/openvqa/blob/master/utils/visualise_engine.py).
 
 <p align="center">
 	<img src="Images/best1.jpg" width="500">
 </p>
 
-### Visualisation of attention distribution of image
+### Visualisation of model's attention distribution on image
 
 ![vis-1va](Images/best1-va.jpg)
 
-### Visualisation of attention distribution of text data
+### Visualisation of model's attention distribution on text data
 
 ![vis-1va](Images/best1-ta.jpg)
