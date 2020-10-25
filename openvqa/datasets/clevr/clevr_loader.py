@@ -150,15 +150,15 @@ class DataSet(BaseDataSet):
         iid = str(ques['image_index'])
 
         # Process question
-        ques_ix_iter = self.proc_ques(ques, self.token_to_ix, max_token=self.max_token)
+        ques_ix_iter, words = self.proc_ques(ques, self.token_to_ix, max_token=self.max_token)
         ans_iter = np.zeros(1)
 
-        if self.__C.RUN_MODE in ['train']:
+        if self.__C.RUN_MODE in ['train', 'visualise']:
             # process answers
             ans = ques['answer']
             ans_iter = self.proc_ans(ans, self.ans_to_ix)
 
-        return ques_ix_iter, ans_iter, iid
+        return ques_ix_iter, ans_iter, iid, ques, words, ans
 
 
     def load_img_feats(self, idx, iid):
@@ -191,7 +191,7 @@ class DataSet(BaseDataSet):
             if ix + 1 == max_token:
                 break
 
-        return ques_ix
+        return ques_ix, words
 
 
     def proc_ans(self, ans, ans_to_ix):

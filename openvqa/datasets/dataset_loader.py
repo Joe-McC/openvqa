@@ -4,6 +4,7 @@
 # --------------------------------------------------------
 
 from importlib import import_module
+__all__ = ['DatasetLoader', 'EvalLoader']
 
 class DatasetLoader:
     def __init__(self, __C):

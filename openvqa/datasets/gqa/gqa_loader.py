@@ -196,7 +196,7 @@ class DataSet(BaseDataSet):
             ans = self.ques_dict[qid]['answer']
             ans_iter = self.proc_ans(ans, self.ans_to_ix)
 
-        return ques_ix_iter, ans_iter, iid
+        return ques_ix_iter, ans_iter, iid, ques
 
 
     def load_img_feats(self, idx, iid):
