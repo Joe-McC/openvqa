@@ -7,3 +7,18 @@ This repository contains the implementation of the proposed VQA model from my [M
 The main folder for the model is located [here](https://github.com/markvasin/openvqa/tree/master/openvqa/models/vqabert), and the main python file for the model is [here](https://github.com/markvasin/openvqa/blob/master/openvqa/models/vqabert/net.py). 
 
 ![VQA model](Images/model-framework.png)
+
+## Visualisation
+The code to generate visualisation of attention distribution is [here]().
+
+<p align="center">
+	<img src="Images/best1.jpg" width="500">
+</p>
+
+### Visualisation of attention distribution of image
+
+![vis-1va](Images/best1-va.jpg)
+
+### Visualisation of attention distribution of text data
+
+![vis-1va](Images/best1-ta.jpg)
