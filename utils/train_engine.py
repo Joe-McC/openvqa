@@ -29,6 +29,7 @@ def train_engine(__C, dataset, dataset_eval=None):
     )
     net.cuda()
     net.train()
+    wandb.init()
     wandb.watch(net)
 
     if __C.N_GPU > 1:
@@ -137,21 +138,30 @@ def train_engine(__C, dataset, dataset_eval=None):
 
         time_start = time.time()
         # Iteration
-        for step, (
-                frcn_feat_iter,
-                grid_feat_iter,
-                bbox_feat_iter,
-                ques_ix_iter,
-                ans_iter
-        ) in enumerate(dataloader):
+        #for step, (
+        #        frcn_feat_iter,
+        #        grid_feat_iter,
+        #        bbox_feat_iter,
+        #        ques_ix_iter,
+        #        ans_iter
+        #) in enumerate(dataloader):
+        for step, sample in enumerate(dataloader): 
+            optim.zero_grad() 
+            #count = 0
+            #if(count < 1): 
+            #    print(sample)
+            #count += 1
+            #frcn_feat_iter = frcn_feat_iter.cuda()
+            #grid_feat_iter = grid_feat_iter.cuda()
+            #bbox_feat_iter = bbox_feat_iter.cuda()
+            #ques_ix_iter = ques_ix_iter.cuda()
+            #ans_iter = ans_iter.cuda()
 
-            optim.zero_grad()
-
-            frcn_feat_iter = frcn_feat_iter.cuda()
-            grid_feat_iter = grid_feat_iter.cuda()
-            bbox_feat_iter = bbox_feat_iter.cuda()
-            ques_ix_iter = ques_ix_iter.cuda()
-            ans_iter = ans_iter.cuda()
+            frcn_feat_iter = sample[0].cuda() 
+            grid_feat_iter = sample[1].cuda() 
+            bbox_feat_iter = sample[2].cuda() 
+            ques_ix_iter = sample[3].cuda() 
+            ans_iter = sample[4].cuda()
 
             loss_tmp = 0
             for accu_step in range(__C.GRAD_ACCU_STEPS):

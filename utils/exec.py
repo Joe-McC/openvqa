@@ -21,8 +21,9 @@ class Execution:
 
         print('Loading dataset........')
         self.dataset = DatasetLoader(__C).DataSet()
-
+        print('Loading dataset finished!!!!!!!!!!!!!!!!!!!!!!!!')
         # If trigger the evaluation after every epoch
+        
         # Will create a new cfgs with RUN_MODE = 'val'
         self.dataset_eval = None
         if __C.EVAL_EVERY_EPOCH:
@@ -56,3 +57,4 @@ class Execution:
             os.remove(self.__C.LOG_PATH + '/log_run_' + version + '.txt')
         print('Finished!')
         print('')
+

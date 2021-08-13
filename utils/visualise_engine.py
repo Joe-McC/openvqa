@@ -70,22 +70,28 @@ def visualise_engine(__C):
         pin_memory=__C.PIN_MEM
     )
 
-    for step, (
-            frcn_feat_iter,
-            grid_feat_iter,
-            bbox_feat_iter,
-            ques_ix_iter,
-            ans_iter, image_id, question, words, target_ans
-    ) in enumerate(dataloader):
+    #for step, (
+    #        frcn_feat_iter,
+    #        grid_feat_iter,
+    #        bbox_feat_iter,
+    #        ques_ix_iter,
+    #        ans_iter, image_id, question, words, target_ans
+    #) in enumerate(dataloader):
+    for step, sample in enumerate(dataloader):
         print("\rEvaluation: [step %4d/%4d]" % (
             step,
             int(data_size / __C.EVAL_BATCH_SIZE),
         ), end='          ')
 
-        frcn_feat_iter = frcn_feat_iter.cuda()
-        grid_feat_iter = grid_feat_iter.cuda()
-        bbox_feat_iter = bbox_feat_iter.cuda()
-        ques_ix_iter = ques_ix_iter.cuda()
+        #frcn_feat_iter = frcn_feat_iter.cuda()
+        #grid_feat_iter = grid_feat_iter.cuda()
+        #bbox_feat_iter = bbox_feat_iter.cuda()
+        #ques_ix_iter = ques_ix_iter.cuda()
+        
+        frcn_feat_iter = sample[0].cuda()
+        grid_feat_iter = sample[1].cuda()
+        bbox_feat_iter = sample[2].cuda()
+        ques_ix_iter = sample[3].cuda()
 
         pred, img_attention_map, txt_attention_map = net(
             frcn_feat_iter,
@@ -94,14 +100,18 @@ def visualise_engine(__C):
             ques_ix_iter
         )
         img_attention_map = img_attention_map[:, :, :, 1:]
-        txt_attention_map = txt_attention_map[:, :, :, 1:len(words) + 1]
+        #txt_attention_map = txt_attention_map[:, :, :, 1:len(words) + 1]
+        txt_attention_map = txt_attention_map[:, :, :, 1:len(sample[7]) + 1]
         pred_np = pred.cpu().data.numpy()
         pred_argmax = np.argmax(pred_np, axis=1)
         ans = dataset.ix_to_ans[pred_argmax[0]]
         plt.interactive(False)
-        visualise_img(question['image_filename'][0], question['question'][0], img_attention_map.cpu().data.numpy()[0],
-                      ans, target_ans[0])
-        visualise_txt(words, txt_attention_map.cpu().data.numpy()[0])
+        #visualise_img(question['image_filename'][0], question['question'][0], img_attention_map.cpu().data.numpy()[0],
+                      #ans, target_ans[0])
+        visualise_img(sample[6]['image_filename'][0], sample[6]['question'][0], img_attention_map.cpu().data.numpy()[0],
+                      ans, sample[8][0])
+        #visualise_txt(words, txt_attention_map.cpu().data.numpy()[0])
+        visualise_txt(sample[7], txt_attention_map.cpu().data.numpy()[0])
 
 
 

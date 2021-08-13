@@ -24,26 +24,32 @@ class DataSet(BaseDataSet):
         #     glob.glob(__C.FEATS_PATH[__C.DATASET]['val'] + '/*.npz') + \
         #     glob.glob(__C.FEATS_PATH[__C.DATASET]['test'] + '/*.npz')
 
-        # Loading question word list
+        print("loading question word list")
+
+	# Loading question word list
         stat_ques_list = \
             json.load(open(__C.RAW_PATH[__C.DATASET]['train'], 'r'))['questions'] + \
             json.load(open(__C.RAW_PATH[__C.DATASET]['val'], 'r'))['questions'] + \
             json.load(open(__C.RAW_PATH[__C.DATASET]['test'], 'r'))['questions']
 
+        print("loading answer word list")
         # Loading answer word list
         stat_ans_list = \
             json.load(open(__C.RAW_PATH[__C.DATASET]['train'], 'r'))['questions'] + \
             json.load(open(__C.RAW_PATH[__C.DATASET]['val'], 'r'))['questions']
 
+        print("loading question and answer list")
         # Loading question and answer list
         self.ques_list = []
         grid_feat_path_list = []
 
         split_list = __C.SPLIT[__C.RUN_MODE].split('+')
         for split in split_list:
+            print("test 1", __C.RAW_PATH[__C.DATASET][split])
             self.ques_list += json.load(open(__C.RAW_PATH[__C.DATASET][split], 'r'))['questions']
+            print("test 2", split)
             grid_feat_path_list += glob.glob(__C.FEATS_PATH[__C.DATASET][split] + '/*.npz')
-
+            print("test 3", split)
         # Define run data size
         self.data_size = self.ques_list.__len__()
 
@@ -152,7 +158,8 @@ class DataSet(BaseDataSet):
         # Process question
         ques_ix_iter, words = self.proc_ques(ques, self.token_to_ix, max_token=self.max_token)
         ans_iter = np.zeros(1)
-
+        ans = ""
+       
         if self.__C.RUN_MODE in ['train', 'visualise']:
             # process answers
             ans = ques['answer']

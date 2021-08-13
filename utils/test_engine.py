@@ -69,23 +69,29 @@ def test_engine(__C, dataset, state_dict=None, validation=False):
         pin_memory=__C.PIN_MEM
     )
 
-    for step, (
-            frcn_feat_iter,
-            grid_feat_iter,
-            bbox_feat_iter,
-            ques_ix_iter,
-            ans_iter
-    ) in enumerate(dataloader):
-
+    #for step, (
+    #        frcn_feat_iter,
+    #        grid_feat_iter,
+    #        bbox_feat_iter,
+    #        ques_ix_iter,
+    #        ans_iter
+    #) in enumerate(dataloader):
+    for step, sample in enumerate(dataloader):
         print("\rEvaluation: [step %4d/%4d]" % (
             step,
             int(data_size / __C.EVAL_BATCH_SIZE),
         ), end='          ')
 
-        frcn_feat_iter = frcn_feat_iter.cuda()
-        grid_feat_iter = grid_feat_iter.cuda()
-        bbox_feat_iter = bbox_feat_iter.cuda()
-        ques_ix_iter = ques_ix_iter.cuda()
+        #frcn_feat_iter = frcn_feat_iter.cuda()
+        #grid_feat_iter = grid_feat_iter.cuda()
+        #bbox_feat_iter = bbox_feat_iter.cuda()
+        #ques_ix_iter = ques_ix_iter.cuda()
+              
+
+        frcn_feat_iter = sample[0].cuda()
+        grid_feat_iter = sample[1].cuda()
+        bbox_feat_iter = sample[2].cuda()
+        ques_ix_iter = sample[3].cuda()
 
         pred = net(
             frcn_feat_iter,
