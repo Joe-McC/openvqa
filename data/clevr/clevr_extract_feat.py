@@ -1,3 +1,4 @@
+
 # --------------------------------------------------------
 # OpenVQA
 # CLEVR images feature extraction script
@@ -10,6 +11,8 @@ python clevr_extract_feat.py --mode=all --gpu=0
 
 python clevr_extract_feat.py --mode=train --gpu=0 --model=resnet101 --model_stage=3 --batch_size=128 --image_height=224 --image_width=224
 '''
+
+from capsnet import CapsNet, ReconstructionNet, CapsNetWithReconstruction
 
 import argparse, os, json
 import numpy as np
@@ -71,7 +74,13 @@ def extract_feature(args, images_path, feats_npz_path):
     assert min(idx_set) == 0 and max(idx_set) == len(idx_set) - 1
     print('Image number:', len(input_paths))
 
-    model = build_model(args)
+    #model = build_model(args)
+    model = CapsNet(3,10)
+    reconstruction_model = ReconstructionNet(16,10)
+    reconstruction_alpha = 0.0005
+    model = CapsNetWithReconstruction(model, reconstruction_model)
+    model.cuda()
+
 
     if not os.path.exists(feats_npz_path):
         os.mkdir(feats_npz_path)
